@@ -1,7 +1,7 @@
 export interface Note {
-    id: string;
-    type: "note" | "trash";
-    title:string;
-    content:string;
-    marked: boolean;
+  id?: string;
+  type: 'note' | 'trash';
+  title: string;
+  content: string;
+  marked: boolean;
 }

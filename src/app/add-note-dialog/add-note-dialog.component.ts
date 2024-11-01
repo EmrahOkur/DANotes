@@ -26,16 +26,12 @@ export class AddNoteDialogComponent {
 
   addNote() {
     let note: Note = {
-      id: this.generateId(),
       type: 'note',
       title: this.title,
       content: this.description,
       marked: false,
     };
-    this.noteService.addNote(note);
+    this.noteService.addNote(note, 'notes');
     this.addDialogClosed.emit(false);
-  }
-  generateId(): string {
-    return Math.random().toString(36).substr(2, 9);
   }
 }

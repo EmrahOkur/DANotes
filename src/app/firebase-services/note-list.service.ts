@@ -8,6 +8,7 @@ import {
   Unsubscribe,
   addDoc,
   updateDoc,
+  deleteDoc,
 } from '@angular/fire/firestore';
 import { Observable, Subscription } from 'rxjs';
 
@@ -27,6 +28,11 @@ export class NoteListService implements OnDestroy {
     this.unsubNotes = this.subNoteList();
   }
 
+  async deleteNote(colId: 'notes' | 'trash', docId: string) {
+    await deleteDoc(this.getSingleDocRef(colId, docId)).catch((err) => {
+      console.log(err);
+    });
+  }
   async updateNote(note: Note) {
     if (note.id) {
       let docRef = this.getSingleDocRef(this.getColIdFromNote(note), note.id);
@@ -52,14 +58,16 @@ export class NoteListService implements OnDestroy {
       return 'trash';
     }
   }
-  async addNote(item: Note) {
-    await addDoc(this.getNotesRef(), item)
-      .catch((err) => {
-        console.error(err);
-      })
-      .then((docRef) => {
-        console.log('Document written with ID:', docRef?.id);
-      });
+  async addNote(item: Note, colId: 'notes' | 'trash') {
+    try {
+      // Erhalte die Sammlungsreferenz basierend auf `colId`
+      const collectionRef = collection(this.firestore, colId);
+      // Füge die Notiz zur angegebenen Sammlung hinzu
+      const docRef = await addDoc(collectionRef, item);
+      console.log('Document written with ID:', docRef.id);
+    } catch (err) {
+      console.error('Error adding document:', err);
+    }
   }
 
   ngOnDestroy() {
