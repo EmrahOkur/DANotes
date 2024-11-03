@@ -100,13 +100,22 @@ export class NoteListService implements OnDestroy {
 
   subNoteList() {
     const q = query(this.getNotesRef(), limit(100));
-    return onSnapshot(q, (snapshot) => {
+    return onSnapshot(q, (list) => {
       this.normalNotes = []; // Vorhandene Notizen leeren
-      snapshot.forEach((doc) => {
-        const note = this.setNoteObject(doc.data(), doc.id);
-        this.normalNotes.push(note); // Notiz hinzufügen
+      list.forEach((element) => {
+        this.normalNotes.push(this.setNoteObject(element.data(), element.id)); // Notiz hinzufügen
       });
-      console.log(this.normalNotes); // Ausgabe der Notizen
+      list.docChanges().forEach((change) => {
+        if (change.type === 'added') {
+          console.log('New Note: ', change.doc.data());
+        }
+        if (change.type === 'modified') {
+          console.log('Modified Note: ', change.doc.data());
+        }
+        if (change.type === 'removed') {
+          console.log('Removed Note: ', change.doc.data());
+        }
+      });
     });
   }
 
