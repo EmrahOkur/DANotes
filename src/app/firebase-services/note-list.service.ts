@@ -9,6 +9,10 @@ import {
   addDoc,
   updateDoc,
   deleteDoc,
+  orderBy,
+  query,
+  limit,
+  where,
 } from '@angular/fire/firestore';
 import { Observable, Subscription } from 'rxjs';
 
@@ -18,13 +22,16 @@ import { Observable, Subscription } from 'rxjs';
 export class NoteListService implements OnDestroy {
   trashNotes: Note[] = [];
   normalNotes: Note[] = [];
+  normalMarekdNotes: Note[] = [];
 
   unsubTrash: Unsubscribe;
   unsubNotes: Unsubscribe;
+  unsubMarkedNotes: Unsubscribe;
   firestore: Firestore = inject(Firestore);
 
   constructor() {
     this.unsubTrash = this.subTrashList();
+    this.unsubMarkedNotes = this.subMarkedNoteList();
     this.unsubNotes = this.subNoteList();
   }
 
@@ -77,6 +84,7 @@ export class NoteListService implements OnDestroy {
     if (this.unsubNotes) {
       this.unsubNotes();
     }
+    this.unsubMarkedNotes();
   }
 
   subTrashList() {
@@ -91,13 +99,26 @@ export class NoteListService implements OnDestroy {
   }
 
   subNoteList() {
-    return onSnapshot(this.getNotesRef(), (snapshot) => {
+    const q = query(this.getNotesRef(), limit(100));
+    return onSnapshot(q, (snapshot) => {
       this.normalNotes = []; // Vorhandene Notizen leeren
       snapshot.forEach((doc) => {
         const note = this.setNoteObject(doc.data(), doc.id);
         this.normalNotes.push(note); // Notiz hinzufügen
       });
       console.log(this.normalNotes); // Ausgabe der Notizen
+    });
+  }
+
+  subMarkedNoteList() {
+    const q = query(this.getNotesRef(), where('marked', '==', true), limit(4));
+    return onSnapshot(q, (list) => {
+      this.normalMarekdNotes = []; // Vorhandene Notizen leeren
+      list.forEach((element) => {
+        const note = this.setNoteObject(element.data(), element.id);
+        this.normalMarekdNotes.push(note); // Notiz hinzufügen
+      });
+      console.log(this.normalMarekdNotes); // Ausgabe der Notizen
     });
   }
 
